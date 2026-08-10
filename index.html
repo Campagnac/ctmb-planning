@@ -10,7 +10,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Configuration Firebase
+    // Configuration Firebase du projet CTMB
     const firebaseConfig = {
       apiKey: "AIzaSyCdY8EK2yEryYD5FNElKmiRhyC9mY5vAS0",
       authDomain: "ctmb-planning.firebaseapp.com",
@@ -18,13 +18,15 @@
       storageBucket: "ctmb-planning.firebasestorage.app",
       messagingSenderId: "773124501457",
       appId: "1:773124501457:web:7b9d28f57f1d6257d83af0",
-      databaseURL: "https://ctmb-planning-default-rtdb.europe-west1.firebasedatabase.app"
+      databaseURL: "https://ctmb-planning-default-rtdb.europe-west1.firebasedatabase.app" // Ajusté pour Realtime DB
     };
 
+    // Initialisation de Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const scheduleRef = ref(db, 'schedule');
 
+    // Export vers la portée globale du navigateur
     window.db = db;
     window.scheduleRef = scheduleRef;
     window.setDatabaseData = (data) => set(scheduleRef, data);
@@ -33,7 +35,7 @@
     onValue(scheduleRef, (snapshot) => {
       const data = snapshot.val();
       window.remoteScheduleData = data || {};
-      if (typeof window.renderCalendar === 'function') {
+      if (window.renderCalendar) {
         window.renderCalendar();
       }
     });
@@ -85,6 +87,7 @@
       margin: 0 auto;
     }
 
+    /* En-tête */
     header {
       background: var(--card-bg);
       padding: 20px 30px;
@@ -192,6 +195,7 @@
       background-color: #dc2626;
     }
 
+    /* Légende */
     .legend {
       display: flex;
       gap: 16px;
@@ -216,6 +220,7 @@
       border-radius: 3px;
     }
 
+    /* Contrôles du Calendrier */
     .calendar-controls {
       display: flex;
       justify-content: space-between;
@@ -234,6 +239,7 @@
       text-transform: capitalize;
     }
 
+    /* Grille Calendrier */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -369,6 +375,7 @@
       font-size: 0.7rem;
     }
 
+    /* Modal */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -493,6 +500,7 @@
       </div>
     </header>
 
+    <!-- Légende -->
     <div class="legend">
       <div class="legend-item">
         <div class="legend-color" style="background: var(--color-presentiel); border: 1px solid var(--color-presentiel-border);"></div>
@@ -512,26 +520,27 @@
       </div>
     </div>
 
+    <!-- Contrôles du Mois -->
     <div class="calendar-controls">
       <button onclick="prevMonth()">&larr; Mois précédent</button>
       <div id="month-display" class="month-display"></div>
       <button onclick="nextMonth()">Mois suivant &rarr;</button>
     </div>
 
+    <!-- Grille de Calendrier -->
     <div class="calendar-grid" id="calendar-grid"></div>
 
+    <!-- Panneau Admin -->
     <div id="admin-panel" class="admin-panel" style="display: none;">
       <h2>Panneau d'Administration</h2>
       <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
-        Gestion globale des fermetures, modification directe des créneaux et réinitialisation.
+        Gestion globale des fermetures et réinitialisation des créneaux.
       </p>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn-secondary" onclick="changeAdminCode()">Modifier le code Admin</button>
-        <button class="btn-danger" onclick="resetAllData()">Réinitialiser le planning complet</button>
-      </div>
+      <button class="btn-danger" onclick="resetAllData()">Réinitialiser le planning complet</button>
     </div>
   </div>
 
+  <!-- Modal Inscription -->
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="modal">
       <h2 id="modal-title" class="modal-title">Gestion de la journée</h2>
@@ -550,7 +559,7 @@
         <div id="slot-status-info" class="slot-selection-status"></div>
 
         <div id="booking-fields">
-          <div class="form-group" id="group-practitioner-name">
+          <div class="form-group">
             <label for="practitioner-name">Nom et Prénom :</label>
             <input type="text" id="practitioner-name" placeholder="ex: Dr. Dupont ou IDE Martin" />
           </div>
@@ -562,17 +571,11 @@
               <option value="teleconsult">Téléconsultation assistée</option>
             </select>
           </div>
-
-          <!-- Saisie d'une infirmière par l'administrateur uniquement -->
-          <div class="form-group" id="group-admin-infirmiere" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 10px;">
-            <label for="admin-infirmiere-name">Nom de l'Infirmier(ère) (optionnel) :</label>
-            <input type="text" id="admin-infirmiere-name" placeholder="ex: IDE Martin" />
-          </div>
         </div>
 
         <div id="admin-close-option" class="form-group" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
           <label style="color: #dc2626; cursor: pointer;">
-            <input type="checkbox" id="toggle-closed" onchange="updateModalFormState()" /> Fermer complètement cette journée
+            <input type="checkbox" id="toggle-closed" /> Fermer complètement cette journée
           </label>
         </div>
 
@@ -580,7 +583,7 @@
           <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
           <div style="display: flex; gap: 8px;">
             <button type="button" id="btn-cancel-slot" class="btn-danger" style="display: none;" onclick="cancelCurrentSlot()">Libérer le créneau</button>
-            <button type="submit" id="btn-submit">Valider</button>
+            <button type="submit" id="btn-submit">Valider l'inscription</button>
           </div>
         </div>
       </form>
@@ -590,8 +593,7 @@
   <script>
     let currentDate = new Date();
     let currentRole = 'medecin';
-    let adminCode = localStorage.getItem('ctmb_admin_code') || '1234'; // Code par défaut: 1234
-    window.remoteScheduleData = window.remoteScheduleData || {};
+    window.remoteScheduleData = {};
 
     const monthNames = [
       "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -614,35 +616,9 @@
     }
 
     function changeRole() {
-      const selectedRole = document.getElementById('user-role').value;
-
-      if (selectedRole === 'admin' && currentRole !== 'admin') {
-        const pass = prompt("Entrez le code d'accès administrateur :");
-        if (pass !== adminCode) {
-          alert("Code incorrect.");
-          document.getElementById('user-role').value = currentRole;
-          return;
-        }
-      }
-
-      currentRole = selectedRole;
+      currentRole = document.getElementById('user-role').value;
       updateRoleUI();
       renderCalendar();
-    }
-
-    function changeAdminCode() {
-      const currentPass = prompt("Entrez le code administrateur actuel :");
-      if (currentPass !== adminCode) {
-        alert("Code incorrect.");
-        return;
-      }
-
-      const newPass = prompt("Entrez le nouveau code administrateur :");
-      if (newPass && newPass.trim() !== "") {
-        adminCode = newPass.trim();
-        localStorage.setItem('ctmb_admin_code', adminCode);
-        alert("Le code d'accès administrateur a bien été modifié.");
-      }
     }
 
     function updateRoleUI() {
@@ -653,8 +629,6 @@
     window.renderCalendar = function() {
       const grid = document.getElementById('calendar-grid');
       const monthDisplay = document.getElementById('month-display');
-      if (!grid || !monthDisplay) return;
-
       grid.innerHTML = '';
 
       const year = currentDate.getFullYear();
@@ -757,10 +731,7 @@
 
     function openModal(dateStr) {
       document.getElementById('selected-date').value = dateStr;
-      
-      const parts = dateStr.split('-');
-      const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-      
+      const dateObj = new Date(dateStr);
       document.getElementById('modal-title').textContent = dateObj.toLocaleDateString('fr-FR', {
         weekday: 'long',
         day: 'numeric',
@@ -773,7 +744,9 @@
       const dayData = schedule[dateStr] || { isClosed: false };
 
       adminOption.style.display = (currentRole === 'admin') ? 'block' : 'none';
-      document.getElementById('toggle-closed').checked = dayData.isClosed || false;
+      if (currentRole === 'admin') {
+        document.getElementById('toggle-closed').checked = dayData.isClosed || false;
+      }
 
       document.getElementById('modal-overlay').classList.remove('hidden');
       updateModalFormState();
@@ -782,8 +755,6 @@
     function updateModalFormState() {
       const dateStr = document.getElementById('selected-date').value;
       const period = document.getElementById('slot-period').value;
-      const isClosedChecked = document.getElementById('toggle-closed').checked;
-      
       const schedule = getScheduleData();
       const dayData = schedule[dateStr] || { isClosed: false, slots: { matin: null, apres-midi: null } };
       const slot = dayData.slots ? dayData.slots[period] : null;
@@ -791,40 +762,27 @@
       const statusInfo = document.getElementById('slot-status-info');
       const bookingFields = document.getElementById('booking-fields');
       const groupMedecin = document.getElementById('group-option-medecin');
-      const groupAdminInfirmiere = document.getElementById('group-admin-infirmiere');
       const btnSubmit = document.getElementById('btn-submit');
       const btnCancel = document.getElementById('btn-cancel-slot');
 
       document.getElementById('practitioner-name').value = '';
-      document.getElementById('admin-infirmiere-name').value = '';
-      
       btnCancel.style.display = 'none';
       btnSubmit.style.display = 'inline-block';
       bookingFields.style.display = 'block';
 
-      if (currentRole === 'admin' && isClosedChecked) {
-        statusInfo.innerHTML = `<strong style="color: #dc2626;">La journée sera enregistrée comme fermée.</strong>`;
-        bookingFields.style.display = 'none';
-        btnSubmit.textContent = "Enregistrer la fermeture";
-        return;
-      }
-
-      if (dayData.isClosed && currentRole !== 'admin') {
-        statusInfo.innerHTML = `<strong style="color: #dc2626;">Journée actuellement fermée par l'administration.</strong>`;
+      if (dayData.isClosed) {
+        statusInfo.innerHTML = `<strong style="color: #dc2626;">Journée fermée par l'administration.</strong>`;
         bookingFields.style.display = 'none';
         btnSubmit.style.display = 'none';
         return;
       }
 
-      btnSubmit.textContent = "Valider";
-
       if (currentRole === 'medecin') {
         groupMedecin.style.display = 'block';
-        groupAdminInfirmiere.style.display = 'none';
 
         if (slot && slot.medecin) {
           const typeLabel = slot.medecin.option === 'teleconsult' ? 'Téléconsultation assistée' : 'Présentiel';
-          statusInfo.innerHTML = `<span style="color: #dc2626; font-weight: bold;">Créneau occupé :</span> ${escapeHtml(slot.medecin.name)} (${typeLabel})`;
+          statusInfo.innerHTML = `<span style="color: #dc2626; font-weight: bold;">Créneau bloqué (Médecin) :</span> ${escapeHtml(slot.medecin.name)} (${typeLabel})`;
           bookingFields.style.display = 'none';
           btnSubmit.style.display = 'none';
           btnCancel.style.display = 'inline-block';
@@ -835,14 +793,13 @@
       } 
       else if (currentRole === 'infirmiere') {
         groupMedecin.style.display = 'none';
-        groupAdminInfirmiere.style.display = 'none';
 
         if (!slot || !slot.medecin || slot.medecin.option !== 'teleconsult') {
           statusInfo.innerHTML = `<span style="color: #dc2626; font-weight: bold;">Inscriptions indisponibles :</span> Seules les plages programmées en <strong>Téléconsultation assistée</strong> par un médecin peuvent recevoir un infirmier(ère).`;
           bookingFields.style.display = 'none';
           btnSubmit.style.display = 'none';
         } else if (slot.infirmiere) {
-          statusInfo.innerHTML = `<span style="color: #dc2626; font-weight: bold;">Créneau occupé (Infirmier/ère) :</span> ${escapeHtml(slot.infirmiere.name)}`;
+          statusInfo.innerHTML = `<span style="color: #dc2626; font-weight: bold;">Créneau bloqué (Infirmier/ère) :</span> ${escapeHtml(slot.infirmiere.name)}`;
           bookingFields.style.display = 'none';
           btnSubmit.style.display = 'none';
           btnCancel.style.display = 'inline-block';
@@ -853,22 +810,7 @@
       } 
       else if (currentRole === 'admin') {
         groupMedecin.style.display = 'block';
-        groupAdminInfirmiere.style.display = 'block';
-        statusInfo.innerHTML = `<strong>Mode Administrateur :</strong> Vous pouvez créer, modifier ou supprimer directement la réservation du Médecin et de l'Infirmier(ère).`;
-
-        if (slot) {
-          if (slot.medecin) {
-            document.getElementById('practitioner-name').value = slot.medecin.name || '';
-            document.getElementById('medecin-option').value = slot.medecin.option || 'presentiel';
-          }
-          if (slot.infirmiere) {
-            document.getElementById('admin-infirmiere-name').value = slot.infirmiere.name || '';
-          }
-          if (slot.medecin || slot.infirmiere) {
-            btnCancel.style.display = 'inline-block';
-            btnCancel.textContent = "Vider ce créneau";
-          }
-        }
+        statusInfo.innerHTML = `Mode Administration : consultation et gestion.`;
       }
     }
 
@@ -878,7 +820,6 @@
       const dateStr = document.getElementById('selected-date').value;
       const period = document.getElementById('slot-period').value;
       const name = document.getElementById('practitioner-name').value.trim();
-      const adminInfirmiereName = document.getElementById('admin-infirmiere-name').value.trim();
       const isClosed = document.getElementById('toggle-closed').checked;
 
       const schedule = getScheduleData();
@@ -889,13 +830,18 @@
         schedule[dateStr].slots = { matin: null, apres-midi: null };
       }
 
-      if (currentRole === 'admin') {
-        schedule[dateStr].isClosed = isClosed;
-        if (isClosed) {
-          saveScheduleData(schedule);
-          closeModal();
-          return;
-        }
+      if (currentRole === 'admin' && isClosed) {
+        schedule[dateStr].isClosed = true;
+        saveScheduleData(schedule);
+        closeModal();
+        return;
+      } else if (currentRole === 'admin') {
+        schedule[dateStr].isClosed = false;
+      }
+
+      if (!name) {
+        alert("Veuillez saisir un nom et prénom.");
+        return;
       }
 
       if (!schedule[dateStr].slots[period]) {
@@ -903,27 +849,15 @@
       }
 
       if (currentRole === 'medecin') {
-        if (!name) { alert("Veuillez saisir un nom."); return; }
         const option = document.getElementById('medecin-option').value;
-        schedule[dateStr].slots[period].medecin = { name: name, option: option };
-      } 
-      else if (currentRole === 'infirmiere') {
-        if (!name) { alert("Veuillez saisir un nom."); return; }
-        schedule[dateStr].slots[period].infirmiere = { name: name };
-      } 
-      else if (currentRole === 'admin') {
-        const option = document.getElementById('medecin-option').value;
-        if (name) {
-          schedule[dateStr].slots[period].medecin = { name: name, option: option };
-        } else {
-          schedule[dateStr].slots[period].medecin = null;
-        }
-
-        if (adminInfirmiereName) {
-          schedule[dateStr].slots[period].infirmiere = { name: adminInfirmiereName };
-        } else {
-          schedule[dateStr].slots[period].infirmiere = null;
-        }
+        schedule[dateStr].slots[period].medecin = {
+          name: name,
+          option: option
+        };
+      } else if (currentRole === 'infirmiere') {
+        schedule[dateStr].slots[period].infirmiere = {
+          name: name
+        };
       }
 
       saveScheduleData(schedule);
@@ -961,7 +895,7 @@
 
     function escapeHtml(text) {
       const div = document.createElement('div');
-      div.textContent = text || '';
+      div.textContent = text;
       return div.innerHTML;
     }
   </script>
