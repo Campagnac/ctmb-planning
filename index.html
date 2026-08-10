@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planning du CTMB</title>
+<style>
+  :root {
+    --bg: #EEF1EE;
+    --surface: #FFFFFF;
+    --surface-sunken: #F5F7F5;
+    --ink: #17231F;
+    --ink-soft: #55655F;
+    --ink-faint: #8B9993;
+    --border: #DBE1DD;
+    --border-strong: #B9C3BE;
+
+    --admin: #3A3F3D;
+    --admin-soft: #E7E7E5;
+    --admin-line: #C7C8C5;
+
+    --presentiel: #2B6E63;
+    --presentiel-soft: #E3EEEC;
+    --presentiel-line: #BBD4CF;
+
+    --tele: #B0701F;
+    --tele-soft: #F6EAD8;
+    --tele-line: #E5C79A;
+
+    --nurse: #3D5A80;
+    --nurse-soft: #E4E9F1;
+    --nurse-line: #C0CCDD;
+
+    --locked: #C9CFCB;
+    --locked-soft: #F0F2F0;
+    --closed-hatch: #E3E6E2;
+
+    --radius: 10px;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'SF Mono', 'Roboto Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    padding: 20px 14px 40px;
+    min-height: 100vh;
+  }
+
+  .app { max-width: 780px; margin: 0 auto; }
+
+  header.top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  header.top .logo {
+    height: 48px;
+    width: auto;
+    flex-shrink: 0;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: 0.01em;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  /* Role switch */
+  .role-switch {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    margin: 16px 0 18px;
+    gap: 3px;
+  }
+  .role-switch button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 10px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .role-switch button .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.5;
+  }
+  .role-switch button.active[data-role="admin"] { background: var(--admin); color: #fff; }
+  .role-switch button.active[data-role="medecin"] { background: var(--presentiel); color: #fff; }
+  .role-switch button.active[data-role="infirmiere"] { background: var(--nurse); color: #fff; }
+  .role-switch button.active .dot { opacity: 1; }
+  .role-switch button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* Admin: slot manager */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px 16px;
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+  .slot-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .slot-row:last-of-type { border-bottom: none; }
+  .slot-row .label { font-weight: 600; flex: 1; }
+  .slot-row .time { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+  .slot-row .del {
+    border: none; background: var(--locked-soft); color: var(--ink-soft);
+    width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slot-row .del:hover { background: var(--locked); color: #fff; }
+  .slot-row .edit {
+    border: none; background: var(--locked-soft); color: var(--ink-soft);
+    width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slot-row .edit:hover { background: var(--admin); color: #fff; }
+  .slot-row.editing {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 0;
+  }
+  .slot-row.editing input[type="text"] {
+    flex: 1 1 120px;
+    font-family: var(--font-body);
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 7px 8px;
+    font-size: 13px;
+    background: var(--surface-sunken);
+  }
+  .slot-row.editing input[type="time"] {
+    flex: 0 0 96px;
+    font-family: var(--font-body);
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 7px 8px;
+    font-size: 13px;
+    background: var(--surface-sunken);
+  }
+  .slot-row.editing .save-slot {
+    border: none; background: var(--admin); color: #fff;
+    padding: 7px 10px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .slot-row.editing .cancel-slot {
+    border: none; background: transparent; color: var(--ink-faint);
+    padding: 7px 6px; font-size: 12px; cursor: pointer;
+  }
+
+  .slot-form {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+  }
+  .slot-form input {
+    font-family: var(--font-body);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 9px;
+    font-size: 13px;
+    background: var(--surface-sunken);
+  }
+  .slot-form input[type="text"] { flex: 1 1 130px; }
+  .slot-form input[type="time"] { flex: 0 0 100px; }
+  .slot-form button {
+    border: none; background: var(--admin); color: #fff;
+    padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .slot-form button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .empty-note { font-size: 12.5px; color: var(--ink-faint); padding: 4px 0; }
+
+  .admin-hint {
+    font-size: 12px; color: var(--ink-soft); margin: -6px 0 14px; padding: 0 2px;
+  }
+
+  .bulk-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .bulk-toolbar .msg { font-size: 12.5px; color: var(--ink-soft); }
+  .bulk-toolbar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bulk-toolbar button {
+    border: none; border-radius: 7px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .bulk-toolbar .toggle-on { background: var(--presentiel); color: #fff; }
+  .bulk-toolbar .toggle-off { background: var(--surface-sunken); color: var(--ink); border: 1px solid var(--border); }
+  .bulk-toolbar .apply { background: var(--presentiel); color: #fff; }
+  .bulk-toolbar .apply:disabled { background: var(--locked); cursor: not-allowed; }
+  .bulk-toolbar .cancel-sel { background: transparent; color: var(--ink-faint); text-decoration: underline; }
+
+  .cell.selected-multi {
+    box-shadow: inset 0 0 0 2px var(--presentiel);
+    background: var(--presentiel-soft);
+  }
+  .select-check {
+    position: absolute; top: 5px; right: 5px;
+    width: 14px; height: 14px; border-radius: 4px;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #fff;
+  }
+  .cell.selected-multi .select-check { background: var(--presentiel); border-color: var(--presentiel); }
+
+  /* Month nav */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    margin-bottom: 14px;
+  }
+  .month-nav button {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-sunken);
+    color: var(--ink);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .month-nav button:hover { background: var(--border); }
+  .month-nav button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .month-label {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: capitalize;
+    color: var(--ink);
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    padding: 0 2px;
+  }
+  .legend .item { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Calendar */
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .weekdays div {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: 2px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .cell-empty { visibility: hidden; }
+
+  .cell {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-height: 66px;
+    padding: 7px 7px 8px;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-body);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cell:hover { box-shadow: 0 2px 6px rgba(23,35,31,0.08); }
+  .cell:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .cell .num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .cell.today .num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 5px;
+    border-radius: 4px;
+    align-self: flex-start;
+  }
+
+  /* admin closed days */
+  .cell.closed {
+    background: repeating-linear-gradient(135deg, var(--closed-hatch), var(--closed-hatch) 4px, var(--surface) 4px, var(--surface) 8px);
+  }
+  .cell.closed .badge { background: var(--locked); color: #fff; }
+
+  /* locked (medecin: closed by admin / infirmiere: no tele slot) */
+  .cell.locked {
+    cursor: not-allowed;
+    background: var(--locked-soft);
+  }
+  .cell.locked .num { color: var(--ink-faint); }
+  .cell.locked:hover { box-shadow: none; }
+  .lock-icon { position: absolute; top: 6px; right: 6px; font-size: 10px; color: var(--locked); }
+
+  .slot-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+  .slot-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--border-strong); }
+  .slot-dot.presentiel { background: var(--presentiel); }
+  .slot-dot.teleconsultation { background: var(--tele); }
+  .slot-dot.nurse-ring { box-shadow: 0 0 0 2px var(--nurse); }
+
+  /* Stats footer */
+  .stats { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .stat .n { font-family: var(--font-mono); font-size: 20px; color: var(--ink); }
+  .stat .l { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* Modal */
+  .overlay { position: fixed; inset: 0; background: rgba(23,35,31,0.35); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
+  .overlay.open { display: flex; }
+  @media (min-width: 520px) { .overlay { align-items: center; } }
+  .modal { background: var(--surface); width: 100%; max-width: 400px; max-height: 86vh; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 20px 20px 22px; box-shadow: 0 -4px 24px rgba(0,0,0,0.15); }
+  @media (min-width: 520px) { .modal { border-radius: 14px; } }
+  .modal h2 { font-family: var(--font-display); font-weight: 400; font-size: 19px; margin: 0 0 3px; text-transform: capitalize; }
+  .modal .sub { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px; }
+
+  .slot-assign { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .slot-assign .name { font-size: 13.5px; font-weight: 700; margin-bottom: 1px; }
+  .slot-assign .time { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); margin-bottom: 8px; }
+  .assign-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .assign-btns button {
+    flex: 1; min-width: 90px; border: 1px solid var(--border); background: var(--surface-sunken);
+    padding: 8px 8px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer;
+  }
+  .assign-btns button.sel[data-t="presentiel"] { background: var(--presentiel); border-color: var(--presentiel); color: #fff; }
+  .assign-btns button.sel[data-t="teleconsultation"] { background: var(--tele); border-color: var(--tele); color: #fff; }
+  .assign-btns button.sel[data-t="clear"] { background: var(--locked); border-color: var(--locked); color: #fff; }
+  .assign-btns button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .nurse-slot { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .nurse-slot .name { font-size: 13.5px; font-weight: 700; }
+  .nurse-slot .time { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); }
+  .nurse-slot button { border: none; background: var(--nurse); color: #fff; padding: 8px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .nurse-slot button.off { background: var(--locked-soft); color: var(--ink-soft); }
+
+  .modal .cancel { width: 100%; text-align: center; padding: 11px; border-radius: 9px; border: none; background: transparent; font-size: 13px; color: var(--ink-faint); cursor: pointer; margin-top: 4px; }
+
+  .pw-input { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; font-size: 14px; margin-bottom: 8px; font-family: var(--font-body); background: var(--surface-sunken); }
+  .pw-input:focus-visible { outline: 2px solid var(--admin); outline-offset: 1px; }
+  .pw-error { color: #B23A3A; font-size: 12px; margin: -2px 0 8px; }
+  .primary-btn { width: 100%; border: none; background: var(--admin); color: #fff; padding: 12px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
+  .primary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-head h2 { margin: 0; }
+  .link-btn { border: none; background: transparent; color: var(--admin); font-size: 11.5px; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; }
+
+  .toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: #fff; font-size: 13px; padding: 10px 16px; border-radius: 8px;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 60; max-width: 90%; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .status-line { font-size: 12px; color: var(--ink-faint); text-align: center; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Planning du CTMB</h1>
+    <img class="logo" src="data:image/png;base64,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" alt="Centre Territorial Médical du Biterrois">
+  </header>
+
+  <div class="role-switch" role="tablist">
+    <button data-role="admin" role="tab" aria-selected="false"><span class="dot"></span>Admin</button>
+    <button data-role="medecin" role="tab" aria-selected="true"><span class="dot"></span>Médecin</button>
+    <button data-role="infirmiere" role="tab" aria-selected="false"><span class="dot"></span>Infirmière</button>
+  </div>
+
+  <div id="adminPanel"></div>
+
+  <div class="month-nav">
+    <button id="prevMonth" aria-label="Mois précédent">‹</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button id="nextMonth" aria-label="Mois suivant">›</button>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <div class="admin-hint" id="adminHint"></div>
+  <div id="bulkToolbar"></div>
+
+  <div class="weekdays">
+    <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <div class="stats" id="stats"></div>
+  <div class="status-line" id="statusLine">Chargement du planning…</div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'garde-schedule';
+  const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const DEFAULT_SLOT = { id: 'jour', label: 'Journée complète', start: '', end: '' };
+
+  let role = 'medecin';
+  let current = new Date();
+  current.setDate(1);
+
+  // data model
+  let slots = [];                 // [{id,label,start,end}]
+  let openDays = {};               // { "YYYY-MM-DD": false }  (absence = open)
+  let schedule = {};               // { "YYYY-MM": { "D": { [slotId]: {type, nurse} } } }
+  let adminHash = null;            // SHA-256 hex of the admin password, or null if not set yet
+  let adminAuthenticated = false;  // session-only; reset on reload
+  let editingSlotId = null;        // id of the slot currently being edited inline, or null
+  let multiSelectMode = false;     // médecin: bulk-editing several days at once
+  let selectedDays = new Set();    // day numbers (in current month) selected for bulk edit
+
+  async function sha256Hex(str) {
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const grid = document.getElementById('grid');
+  const monthLabel = document.getElementById('monthLabel');
+  const legend = document.getElementById('legend');
+  const adminHint = document.getElementById('adminHint');
+  const bulkToolbar = document.getElementById('bulkToolbar');
+  const adminPanel = document.getElementById('adminPanel');
+  const statsEl = document.getElementById('stats');
+  const statusLine = document.getElementById('statusLine');
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById('modal');
+  const toastEl = document.getElementById('toast');
+
+  function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function dateKey(d, day) { return monthKey(d) + '-' + String(day).padStart(2, '0'); }
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  }
+
+  async function load() {
+    try {
+      const res = await window.storage.get(STORAGE_KEY, true);
+      const parsed = res && res.value ? JSON.parse(res.value) : {};
+      slots = Array.isArray(parsed.slots) ? parsed.slots : [];
+      openDays = parsed.openDays || {};
+      schedule = parsed.schedule || {};
+      adminHash = parsed.adminHash || null;
+      migrateOldFormat(parsed);
+    } catch (e) {
+      slots = []; openDays = {}; schedule = {};
+    }
+    if (slots.length === 0) slots = [
+      { id: 'matin', label: 'Matin', start: '08:00', end: '14:00' },
+      { id: 'apres-midi', label: 'Après-midi', start: '14:00', end: '20:00' }
+    ];
+    statusLine.textContent = 'Les données sont partagées entre les trois entrées (admin / médecin / infirmière).';
+    render();
+  }
+
+  // migrate the earlier day-level {type, nurse} format into slot-based format
+  function migrateOldFormat(parsed) {
+    if (parsed.slots) return; // already new format
+    const oldSchedule = parsed && !parsed.schedule && Object.keys(parsed).length ? parsed : null;
+    const src = schedule && Object.keys(schedule).length ? schedule : (typeof parsed === 'object' && !parsed.schedule ? parsed : null);
+    if (!src) return;
+    const migrated = {};
+    Object.keys(src).forEach(mKey => {
+      const monthObj = src[mKey];
+      if (!monthObj || typeof monthObj !== 'object') return;
+      migrated[mKey] = {};
+      Object.keys(monthObj).forEach(day => {
+        const v = monthObj[day];
+        if (v && v.type && !v[DEFAULT_SLOT.id] && (v.type === 'presentiel' || v.type === 'teleconsultation')) {
+          migrated[mKey][day] = { [DEFAULT_SLOT.id]: { type: v.type, nurse: !!v.nurse } };
+        } else {
+          migrated[mKey][day] = v;
+        }
+      });
+    });
+    schedule = migrated;
+  }
+
+  async function save() {
+    try {
+      const payload = JSON.stringify({ slots, openDays, schedule, adminHash });
+      const result = await window.storage.set(STORAGE_KEY, payload, true);
+      if (!result) showToast("Échec de l'enregistrement — réessayez.");
+    } catch (e) {
+      showToast("Échec de l'enregistrement — réessayez.");
+    }
+  }
+
+  function isOpen(d, day) { return openDays[dateKey(d, day)] !== false; }
+  function toggleOpen(d, day) {
+    const k = dateKey(d, day);
+    const nowOpen = isOpen(d, day);
+    if (nowOpen) openDays[k] = false; else delete openDays[k];
+    save(); render();
+  }
+
+  function daySlots(d, day) {
+    const k = monthKey(d);
+    return (schedule[k] && schedule[k][day]) || {};
+  }
+  function setSlotAssignment(d, day, slotId, data) {
+    setSlotAssignmentSilent(d, day, slotId, data);
+    save(); render();
+  }
+  function setSlotAssignmentSilent(d, day, slotId, data) {
+    const k = monthKey(d);
+    if (!schedule[k]) schedule[k] = {};
+    if (!schedule[k][day]) schedule[k][day] = {};
+    if (data === null) delete schedule[k][day][slotId];
+    else schedule[k][day][slotId] = data;
+  }
+
+  function closeModal() { overlay.classList.remove('open'); modal.innerHTML = ''; }
+
+  /* ---------- Admin panel ---------- */
+  function renderAdminPanel() {
+    if (role !== 'admin') { adminPanel.innerHTML = ''; return; }
+    adminPanel.innerHTML = `
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Créneaux horaires</h2>
+          <button class="link-btn" id="changePwBtn">Changer le mot de passe</button>
+        </div>
+        <div id="slotList"></div>
+        <div class="slot-form">
+          <input type="text" id="newLabel" placeholder="Libellé (ex. Matin)" maxlength="30">
+          <input type="time" id="newStart">
+          <input type="time" id="newEnd">
+          <button id="addSlot">Ajouter</button>
+        </div>
+      </div>
+    `;
+    const list = document.getElementById('slotList');
+    if (slots.length === 0) {
+      list.innerHTML = `<div class="empty-note">Aucun créneau défini pour l'instant.</div>`;
+    } else {
+      list.innerHTML = slots.map(s => {
+        if (s.id === editingSlotId) {
+          return `
+            <div class="slot-row editing" data-id="${s.id}">
+              <input type="text" class="edit-label" value="${escapeHtml(s.label)}" maxlength="30">
+              <input type="time" class="edit-start" value="${s.start || ''}">
+              <input type="time" class="edit-end" value="${s.end || ''}">
+              <button class="save-slot">Enregistrer</button>
+              <button class="cancel-slot">Annuler</button>
+            </div>
+          `;
+        }
+        return `
+        <div class="slot-row">
+          <span class="label">${escapeHtml(s.label)}</span>
+          <span class="time">${s.start || '—'}${s.end ? ' – ' + s.end : ''}</span>
+          <button class="edit" data-id="${s.id}" aria-label="Modifier ce créneau">✎</button>
+          <button class="del" data-id="${s.id}" aria-label="Supprimer ce créneau">×</button>
+        </div>
+      `;
+      }).join('');
+      list.querySelectorAll('.del').forEach(btn => {
+        btn.onclick = () => {
+          slots = slots.filter(s => s.id !== btn.dataset.id);
+          save(); renderAdminPanel(); render();
+        };
+      });
+      list.querySelectorAll('.edit').forEach(btn => {
+        btn.onclick = () => {
+          editingSlotId = btn.dataset.id;
+          renderAdminPanel();
+        };
+      });
+      const editingRow = list.querySelector('.slot-row.editing');
+      if (editingRow) {
+        editingRow.querySelector('.save-slot').onclick = () => {
+          const id = editingRow.dataset.id;
+          const label = editingRow.querySelector('.edit-label').value.trim();
+          const start = editingRow.querySelector('.edit-start').value;
+          const end = editingRow.querySelector('.edit-end').value;
+          if (!label) { showToast('Indiquez un libellé pour le créneau.'); return; }
+          const slot = slots.find(s => s.id === id);
+          if (slot) { slot.label = label; slot.start = start; slot.end = end; }
+          editingSlotId = null;
+          save(); renderAdminPanel(); render();
+        };
+        editingRow.querySelector('.cancel-slot').onclick = () => {
+          editingSlotId = null;
+          renderAdminPanel();
+        };
+      }
+    }
+    document.getElementById('addSlot').onclick = () => {
+      const label = document.getElementById('newLabel').value.trim();
+      const start = document.getElementById('newStart').value;
+      const end = document.getElementById('newEnd').value;
+      if (!label) { showToast('Indiquez un libellé pour le créneau.'); return; }
+      slots.push({ id: 'slot-' + Date.now(), label, start, end });
+      save(); renderAdminPanel(); render();
+    };
+    document.getElementById('changePwBtn').onclick = openChangePasswordModal;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ---------- Admin auth ---------- */
+  function openAdminAuthModal(btn) {
+    if (!adminHash) {
+      modal.innerHTML = `
+        <h2>Créer un accès administrateur</h2>
+        <div class="sub">Définissez un mot de passe pour protéger la configuration (jours, créneaux).</div>
+        <input type="password" class="pw-input" id="pw1" placeholder="Mot de passe (4 caractères min.)" autocomplete="new-password">
+        <input type="password" class="pw-input" id="pw2" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+        <div class="pw-error" id="pwError" style="display:none"></div>
+        <button class="primary-btn" id="pwSubmit">Définir et continuer</button>
+        <button class="cancel" id="cancelBtn">Annuler</button>
+      `;
+      overlay.classList.add('open');
+      document.getElementById('pwSubmit').onclick = async () => {
+        const p1 = document.getElementById('pw1').value;
+        const p2 = document.getElementById('pw2').value;
+        const err = document.getElementById('pwError');
+        if (p1.length < 4) { err.textContent = 'Le mot de passe doit faire au moins 4 caractères.'; err.style.display = 'block'; return; }
+        if (p1 !== p2) { err.textContent = 'Les mots de passe ne correspondent pas.'; err.style.display = 'block'; return; }
+        adminHash = await sha256Hex(p1);
+        adminAuthenticated = true;
+        save();
+        closeModal();
+        applyRole(btn);
+      };
+      document.getElementById('cancelBtn').onclick = closeModal;
+    } else {
+      modal.innerHTML = `
+        <h2>Accès administrateur</h2>
+        <div class="sub">Saisissez le mot de passe administrateur.</div>
+        <input type="password" class="pw-input" id="pwLogin" placeholder="Mot de passe" autocomplete="current-password">
+        <div class="pw-error" id="pwError" style="display:none"></div>
+        <button class="primary-btn" id="pwSubmit">Valider</button>
+        <button class="cancel" id="cancelBtn">Annuler</button>
+      `;
+      overlay.classList.add('open');
+      const submit = async () => {
+        const p = document.getElementById('pwLogin').value;
+        const h = await sha256Hex(p);
+        if (h === adminHash) {
+          adminAuthenticated = true;
+          closeModal();
+          applyRole(btn);
+        } else {
+          const err = document.getElementById('pwError');
+          err.textContent = 'Mot de passe incorrect.';
+          err.style.display = 'block';
+        }
+      };
+      document.getElementById('pwSubmit').onclick = submit;
+      document.getElementById('pwLogin').addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+      document.getElementById('cancelBtn').onclick = closeModal;
+    }
+  }
+
+  function openChangePasswordModal() {
+    modal.innerHTML = `
+      <h2>Changer le mot de passe</h2>
+      <div class="sub">Confirmez le mot de passe actuel puis choisissez-en un nouveau.</div>
+      <input type="password" class="pw-input" id="pwCurrent" placeholder="Mot de passe actuel" autocomplete="current-password">
+      <input type="password" class="pw-input" id="pwNew1" placeholder="Nouveau mot de passe" autocomplete="new-password">
+      <input type="password" class="pw-input" id="pwNew2" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password">
+      <div class="pw-error" id="pwError" style="display:none"></div>
+      <button class="primary-btn" id="pwSubmit">Mettre à jour</button>
+      <button class="cancel" id="cancelBtn">Annuler</button>
+    `;
+    overlay.classList.add('open');
+    document.getElementById('pwSubmit').onclick = async () => {
+      const cur = document.getElementById('pwCurrent').value;
+      const n1 = document.getElementById('pwNew1').value;
+      const n2 = document.getElementById('pwNew2').value;
+      const err = document.getElementById('pwError');
+      const curHash = await sha256Hex(cur);
+      if (curHash !== adminHash) { err.textContent = 'Mot de passe actuel incorrect.'; err.style.display = 'block'; return; }
+      if (n1.length < 4) { err.textContent = 'Le nouveau mot de passe doit faire au moins 4 caractères.'; err.style.display = 'block'; return; }
+      if (n1 !== n2) { err.textContent = 'Les nouveaux mots de passe ne correspondent pas.'; err.style.display = 'block'; return; }
+      adminHash = await sha256Hex(n1);
+      save();
+      closeModal();
+      showToast('Mot de passe mis à jour.');
+    };
+    document.getElementById('cancelBtn').onclick = closeModal;
+  }
+
+  /* ---------- Modals ---------- */
+  function openAdminDayModal(d, day) {
+    const open = isOpen(d, day);
+    const label = new Date(d.getFullYear(), d.getMonth(), day).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    modal.innerHTML = `
+      <h2>${label}</h2>
+      <div class="sub">Disponibilité de ce jour pour le médecin</div>
+      <div class="assign-btns" style="margin-bottom:10px">
+        <button id="setOpen" class="${open ? 'sel' : ''}" data-t="presentiel">Jour ouvert</button>
+        <button id="setClosed" class="${!open ? 'sel' : ''}" data-t="clear">Jour fermé</button>
+      </div>
+      <button class="cancel" id="cancelBtn">Fermer</button>
+    `;
+    overlay.classList.add('open');
+    document.getElementById('setOpen').onclick = () => { if (!open) toggleOpen(d, day); closeModal(); };
+    document.getElementById('setClosed').onclick = () => { if (open) toggleOpen(d, day); closeModal(); };
+    document.getElementById('cancelBtn').onclick = closeModal;
+  }
+
+  function openDoctorModal(d, day) {
+    const label = new Date(d.getFullYear(), d.getMonth(), day).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const assigned = daySlots(d, day);
+    modal.innerHTML = `<h2>${label}</h2><div class="sub">Attribuer un mode par créneau</div>` +
+      slots.map(s => {
+        const a = assigned[s.id];
+        const t = a ? a.type : null;
+        return `
+        <div class="slot-assign">
+          <div class="name">${escapeHtml(s.label)}</div>
+          <div class="time">${s.start || '—'}${s.end ? ' – ' + s.end : ''}</div>
+          <div class="assign-btns" data-slot="${s.id}">
+            <button data-t="presentiel" class="${t === 'presentiel' ? 'sel' : ''}">Présentiel</button>
+            <button data-t="teleconsultation" class="${t === 'teleconsultation' ? 'sel' : ''}">Télécons. assistée</button>
+            <button data-t="clear" class="${!t ? 'sel' : ''}">Effacer</button>
+          </div>
+        </div>`;
+      }).join('') +
+      `<button class="cancel" id="cancelBtn">Fermer</button>`;
+    overlay.classList.add('open');
+    modal.querySelectorAll('.assign-btns').forEach(group => {
+      const slotId = group.dataset.slot;
+      group.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          const t = btn.dataset.t;
+          if (t === 'clear') {
+            setSlotAssignment(d, day, slotId, null);
+          } else {
+            const prev = daySlots(d, day)[slotId];
+            const nurse = t === 'teleconsultation' && prev ? !!prev.nurse : false;
+            setSlotAssignment(d, day, slotId, { type: t, nurse });
+          }
+          closeModal();
+        };
+      });
+    });
+    document.getElementById('cancelBtn').onclick = closeModal;
+  }
+
+  function openDoctorBulkModal(days) {
+    const sorted = [...days].sort((a, b) => a - b);
+    const label = sorted.length + ' jour' + (sorted.length > 1 ? 's' : '') + ' sélectionné' + (sorted.length > 1 ? 's' : '') + ' — ' + MOIS[current.getMonth()];
+    modal.innerHTML = `<h2>Modifier plusieurs jours</h2><div class="sub">${label} : ${sorted.join(', ')}</div>` +
+      slots.map(s => `
+        <div class="slot-assign">
+          <div class="name">${escapeHtml(s.label)}</div>
+          <div class="time">${s.start || '—'}${s.end ? ' – ' + s.end : ''}</div>
+          <div class="assign-btns" data-slot="${s.id}">
+            <button data-t="presentiel">Présentiel</button>
+            <button data-t="teleconsultation">Télécons. assistée</button>
+            <button data-t="clear">Effacer</button>
+          </div>
+        </div>`).join('') +
+      `<button class="cancel" id="cancelBtn">Annuler</button>`;
+    overlay.classList.add('open');
+    modal.querySelectorAll('.assign-btns').forEach(group => {
+      const slotId = group.dataset.slot;
+      group.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          const t = btn.dataset.t;
+          sorted.forEach(day => {
+            if (t === 'clear') {
+              setSlotAssignmentSilent(current, day, slotId, null);
+            } else {
+              const prev = daySlots(current, day)[slotId];
+              const nurse = t === 'teleconsultation' && prev ? !!prev.nurse : false;
+              setSlotAssignmentSilent(current, day, slotId, { type: t, nurse });
+            }
+          });
+          save();
+          closeModal();
+          selectedDays.clear();
+          multiSelectMode = false;
+          showToast(`Appliqué à ${sorted.length} jour${sorted.length > 1 ? 's' : ''}.`);
+          render();
+        };
+      });
+    });
+    document.getElementById('cancelBtn').onclick = closeModal;
+  }
+    const label = new Date(d.getFullYear(), d.getMonth(), day).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const assigned = daySlots(d, day);
+    const teleSlots = slots.filter(s => assigned[s.id] && assigned[s.id].type === 'teleconsultation');
+    modal.innerHTML = `<h2>${label}</h2><div class="sub">Créneaux en téléconsultation assistée</div>` +
+      teleSlots.map(s => {
+        const a = assigned[s.id];
+        const on = !!a.nurse;
+        return `
+        <div class="nurse-slot">
+          <div>
+            <div class="name">${escapeHtml(s.label)}</div>
+            <div class="time">${s.start || '—'}${s.end ? ' – ' + s.end : ''}</div>
+          </div>
+          <button data-slot="${s.id}" class="${on ? '' : 'off'}">${on ? 'Retirer' : 'Se positionner'}</button>
+        </div>`;
+      }).join('') +
+      `<button class="cancel" id="cancelBtn">Fermer</button>`;
+    overlay.classList.add('open');
+    modal.querySelectorAll('.nurse-slot button').forEach(btn => {
+      btn.onclick = () => {
+        const slotId = btn.dataset.slot;
+        const a = daySlots(d, day)[slotId];
+        setSlotAssignment(d, day, slotId, { type: 'teleconsultation', nurse: !a.nurse });
+        closeModal();
+      };
+    });
+    document.getElementById('cancelBtn').onclick = closeModal;
+  }
+
+  function onCellClick(day) {
+    if (role === 'admin') {
+      openAdminDayModal(current, day);
+      return;
+    }
+    const open = isOpen(current, day);
+    if (!open) { showToast("Jour fermé par l'administrateur."); return; }
+    if (role === 'medecin') {
+      if (slots.length === 0) { showToast("Aucun créneau horaire défini — contactez l'administrateur."); return; }
+      if (multiSelectMode) {
+        if (selectedDays.has(day)) selectedDays.delete(day); else selectedDays.add(day);
+        render();
+        return;
+      }
+      openDoctorModal(current, day);
+    } else {
+      const assigned = daySlots(current, day);
+      const hasTele = slots.some(s => assigned[s.id] && assigned[s.id].type === 'teleconsultation');
+      if (hasTele) openNurseModal(current, day);
+      else showToast("Jour verrouillé — aucun créneau en téléconsultation assistée.");
+    }
+  }
+
+  /* ---------- Bulk edit toolbar (médecin) ---------- */
+  function renderBulkToolbar() {
+    if (role !== 'medecin') { bulkToolbar.innerHTML = ''; return; }
+    if (!multiSelectMode) {
+      bulkToolbar.innerHTML = `
+        <div class="bulk-toolbar">
+          <span class="msg">Besoin de modifier plusieurs jours à la fois ?</span>
+          <div class="actions"><button class="toggle-off" id="startMulti">Sélection multiple</button></div>
+        </div>
+      `;
+      document.getElementById('startMulti').onclick = () => {
+        multiSelectMode = true;
+        selectedDays.clear();
+        render();
+      };
+    } else {
+      const n = selectedDays.size;
+      bulkToolbar.innerHTML = `
+        <div class="bulk-toolbar">
+          <span class="msg">${n} jour${n > 1 ? 's' : ''} sélectionné${n > 1 ? 's' : ''} — cliquez sur les jours ouverts à inclure.</span>
+          <div class="actions">
+            <button class="apply" id="applyMulti" ${n === 0 ? 'disabled' : ''}>Appliquer</button>
+            <button class="cancel-sel" id="cancelMulti">Annuler</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('applyMulti').onclick = () => {
+        if (selectedDays.size === 0) return;
+        openDoctorBulkModal(selectedDays);
+      };
+      document.getElementById('cancelMulti').onclick = () => {
+        multiSelectMode = false;
+        selectedDays.clear();
+        render();
+      };
+    }
+  }
+
+  /* ---------- Legend / stats / grid ---------- */
+  function renderLegend() {
+    if (role === 'admin') {
+      legend.innerHTML = `
+        <div class="item"><span class="swatch" style="background:var(--surface);border:1px solid var(--border)"></span>Jour ouvert</div>
+        <div class="item"><span class="swatch" style="background:var(--closed-hatch)"></span>Jour fermé</div>
+      `;
+      adminHint.textContent = "Cliquez un jour pour l'ouvrir ou le fermer à la sélection du médecin. Gérez les créneaux horaires ci-dessus.";
+    } else if (role === 'medecin') {
+      legend.innerHTML = `
+        <div class="item"><span class="swatch" style="background:var(--presentiel)"></span>Présentiel</div>
+        <div class="item"><span class="swatch" style="background:var(--tele)"></span>Téléconsultation assistée</div>
+        <div class="item"><span class="swatch" style="background:var(--closed-hatch)"></span>Jour fermé (admin)</div>
+      `;
+      adminHint.textContent = '';
+    } else {
+      legend.innerHTML = `
+        <div class="item"><span class="swatch" style="background:var(--tele)"></span>Téléconsultation assistée</div>
+        <div class="item"><span class="swatch" style="background:var(--nurse)"></span>Vous êtes positionnée</div>
+        <div class="item"><span class="swatch" style="background:var(--locked)"></span>Verrouillé</div>
+      `;
+      adminHint.textContent = '';
+    }
+  }
+
+  function renderStats() {
+    const k = monthKey(current);
+    const month = schedule[k] || {};
+    let pres = 0, tele = 0, nurse = 0, closedDays = 0;
+    Object.values(month).forEach(day => {
+      Object.values(day).forEach(v => {
+        if (v.type === 'presentiel') pres++;
+        if (v.type === 'teleconsultation') { tele++; if (v.nurse) nurse++; }
+      });
+    });
+    const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) if (!isOpen(current, d)) closedDays++;
+    statsEl.innerHTML = `
+      <div class="stat"><div class="n">${pres}</div><div class="l">Créneaux présentiel</div></div>
+      <div class="stat"><div class="n">${tele}</div><div class="l">Créneaux téléconsultation</div></div>
+      <div class="stat"><div class="n">${nurse} / ${tele}</div><div class="l">Couverts par l'infirmière</div></div>
+      <div class="stat"><div class="n">${closedDays}</div><div class="l">Jours fermés ce mois-ci</div></div>
+    `;
+  }
+
+  function render() {
+    renderAdminPanel();
+    monthLabel.textContent = MOIS[current.getMonth()] + ' ' + current.getFullYear();
+    renderLegend();
+    renderBulkToolbar();
+    renderStats();
+
+    grid.innerHTML = '';
+    const year = current.getFullYear(), month = current.getMonth();
+    const firstDay = new Date(year, month, 1);
+    let startOffset = firstDay.getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = new Date().toDateString();
+
+    for (let i = 0; i < startOffset; i++) {
+      const e = document.createElement('div');
+      e.className = 'cell cell-empty';
+      grid.appendChild(e);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const open = isOpen(current, day);
+      const assigned = daySlots(current, day);
+      const isToday = new Date(year, month, day).toDateString() === todayStr;
+
+      let cls = 'cell';
+      let inner = `<span class="num">${day}</span>`;
+
+      if (role === 'admin') {
+        if (!open) { cls += ' closed'; inner += `<span class="badge">Fermé</span>`; }
+      } else if (role === 'medecin') {
+        if (!open) {
+          cls += ' locked';
+          inner += `<span class="lock-icon">🔒</span>`;
+        } else {
+          const dots = slots.map(s => {
+            const a = assigned[s.id];
+            const t = a ? a.type : '';
+            return `<span class="slot-dot ${t}"></span>`;
+          }).join('');
+          inner += `<div class="slot-dots">${dots}</div>`;
+          if (multiSelectMode) {
+            if (selectedDays.has(day)) cls += ' selected-multi';
+            inner += `<span class="select-check">${selectedDays.has(day) ? '✓' : ''}</span>`;
+          }
+        }
+      } else {
+        const hasTele = slots.some(s => assigned[s.id] && assigned[s.id].type === 'teleconsultation');
+        if (!open || !hasTele) {
+          cls += ' locked';
+          inner += `<span class="lock-icon">🔒</span>`;
+        } else {
+          const dots = slots.map(s => {
+            const a = assigned[s.id];
+            if (!a || a.type !== 'teleconsultation') return `<span class="slot-dot"></span>`;
+            return `<span class="slot-dot teleconsultation${a.nurse ? ' nurse-ring' : ''}"></span>`;
+          }).join('');
+          inner += `<div class="slot-dots">${dots}</div>`;
+        }
+      }
+      if (isToday) cls += ' today';
+
+      btn.className = cls;
+      btn.innerHTML = inner;
+      btn.setAttribute('aria-label', `${day}${isToday ? " (aujourd'hui)" : ''}`);
+      btn.onclick = () => onCellClick(day);
+      grid.appendChild(btn);
+    }
+  }
+
+  function applyRole(btn) {
+    role = btn.dataset.role;
+    multiSelectMode = false;
+    selectedDays.clear();
+    document.querySelectorAll('.role-switch button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+      b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+    });
+    render();
+  }
+
+  document.querySelectorAll('.role-switch button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.role === 'admin' && !adminAuthenticated) {
+        openAdminAuthModal(btn);
+        return;
+      }
+      applyRole(btn);
+    });
+  });
+  document.querySelector('.role-switch button[data-role="medecin"]').classList.add('active');
+
+  document.getElementById('prevMonth').onclick = () => { current.setMonth(current.getMonth() - 1); selectedDays.clear(); render(); };
+  document.getElementById('nextMonth').onclick = () => { current.setMonth(current.getMonth() + 1); selectedDays.clear(); render(); };
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  load();
+})();
+</script>
+</body>
+</html>
