@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planning CTMB - Centre Territorial Médical du Biterrois</title>
+
+  <!-- Firebase Scripts (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #1e3a8a;
+      --primary-hover: #1e40af;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+
+      --color-presentiel: #dcfce7;
+      --color-presentiel-text: #166534;
+      --color-presentiel-border: #16a34a;
+
+      --color-teleconsult: #dbeafe;
+      --color-teleconsult-text: #1e40af;
+      --color-teleconsult-border: #2563eb;
+
+      --color-infirmiere: #f3e8ff;
+      --color-infirmiere-text: #6b21a8;
+      --color-infirmiere-border: #9333ea;
+
+      --color-ferme: #fee2e2;
+      --color-ferme-text: #991b1b;
+      --color-ferme-border: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--card-bg);
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .logo-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-badge {
+      background: var(--primary-color);
+      color: white;
+      font-weight: bold;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .role-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+
+    .role-selector label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    select, input, button {
+      font-size: 0.95rem;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.btn-secondary {
+      background-color: #64748b;
+    }
+
+    button.btn-secondary:hover {
+      background-color: #475569;
+    }
+
+    button.btn-danger {
+      background-color: #ef4444;
+    }
+
+    button.btn-danger:hover {
+      background-color: #dc2626;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .calendar-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .month-display {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      text-transform: capitalize;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .weekday-header {
+      text-align: center;
+      font-weight: 600;
+      padding: 10px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      color: #334155;
+      font-size: 0.9rem;
+    }
+
+    .day-cell {
+      background: var(--card-bg);
+      border-radius: 8px;
+      min-height: 140px;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .day-cell.empty {
+      background: transparent;
+      border: none;
+    }
+
+    .day-cell.closed-day {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+      cursor: pointer;
+    }
+
+    .day-header-number {
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .day-header-number:hover {
+      background-color: #f1f5f9;
+    }
+
+    .closed-label {
+      font-size: 0.7rem;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .slots-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-grow: 1;
+    }
+
+    .time-slot-box {
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 6px;
+      background: #fafafa;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .time-slot-box:hover {
+      border-color: var(--primary-color);
+      background-color: #f0fdf4;
+      transform: scale(1.02);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .time-slot-header {
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 2px;
+    }
+
+    .slot-badge {
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 2px;
+    }
+
+    .slot-badge.presentiel {
+      background-color: var(--color-presentiel);
+      color: var(--color-presentiel-text);
+      border-left: 3px solid var(--color-presentiel-border);
+    }
+
+    .slot-badge.teleconsult {
+      background-color: var(--color-teleconsult);
+      color: var(--color-teleconsult-text);
+      border-left: 3px solid var(--color-teleconsult-border);
+    }
+
+    .slot-badge.infirmiere {
+      background-color: var(--color-infirmiere);
+      color: var(--color-infirmiere-text);
+      border-left: 3px solid var(--color-infirmiere-border);
+    }
+
+    .slot-title-text {
+      font-weight: 600;
+      font-size: 0.72rem;
+    }
+
+    .slot-name-text {
+      font-weight: 700;
+      font-size: 0.8rem;
+      word-break: break-word;
+    }
+
+    .empty-slot-text {
+      color: #94a3b8;
+      font-style: italic;
+      font-size: 0.7rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    .modal {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .admin-panel {
+      margin-top: 24px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .admin-panel h2 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+    }
+
+    .slot-selection-status {
+      background-color: #f1f5f9;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .calendar-grid {
+        grid-template-columns: repeat(1, 1fr);
+      }
+      .weekday-header {
+        display: none;
+      }
+      .day-cell {
+        min-height: auto;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="logo-title">
+        <div class="logo-badge">CTMB</div>
+        <div>
+          <h1>Planning des permanences</h1>
+          <div class="subtitle">Centre Territorial Médical du Biterrois</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="role-selector">
+          <label for="user-role">Vous êtes :</label>
+          <select id="user-role">
+            <option value="medecin">Médecin</option>
+            <option value="infirmiere">Infirmier(ère)</option>
+            <option value="admin">Administrateur</option>
+          </select>
+        </div>
+        <div style="border: 1px dashed #cbd5e1; padding: 10px 15px; border-radius: 6px; color: #64748b; font-size: 0.85rem;">
+          Logo CTMB
+        </div>
+      </div>
+    </header>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: var(--color-presentiel); border: 1px solid var(--color-presentiel-border);"></div>
+        <span>Présentiel (Médecin)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: var(--color-teleconsult); border: 1px solid var(--color-teleconsult-border);"></div>
+        <span>Téléconsultation assistée (Médecin)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: var(--color-infirmiere); border: 1px solid var(--color-infirmiere-border);"></div>
+        <span>Accompagnement (Infirmier/ère)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: var(--color-ferme); border: 1px solid var(--color-ferme-border);"></div>
+        <span>Jour Fermé</span>
+      </div>
+    </div>
+
+    <div class="calendar-controls">
+      <button id="btn-prev-month">&larr; Mois précédent</button>
+      <div id="month-display" class="month-display">Chargement...</div>
+      <button id="btn-next-month">Mois suivant &rarr;</button>
+    </div>
+
+    <div class="calendar-grid" id="calendar-grid"></div>
+
+    <div id="admin-panel" class="admin-panel" style="display: none;">
+      <h2>Panneau d'Administration</h2>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
+        Gestion globale des fermetures, modification directe des créneaux et réinitialisation.
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-secondary" id="btn-change-admin-code">Modifier le code Admin</button>
+        <button class="btn-danger" id="btn-reset-data">Réinitialiser le planning complet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <h2 id="modal-title" class="modal-title">Gestion de la journée</h2>
+      
+      <form id="slot-form">
+        <input type="hidden" id="selected-date" />
+
+        <div class="form-group">
+          <label for="slot-period">Créneau horaire :</label>
+          <select id="slot-period">
+            <option value="matin">Matin (09h - 13h)</option>
+            <option value="apres-midi">Après-midi (14h - 19h)</option>
+          </select>
+        </div>
+
+        <div id="slot-status-info" class="slot-selection-status"></div>
+
+        <div id="booking-fields">
+          <div class="form-group" id="group-practitioner-name">
+            <label for="practitioner-name">Nom et Prénom :</label>
+            <input type="text" id="practitioner-name" placeholder="ex: Dr. Dupont ou IDE Martin" />
+          </div>
+
+          <div class="form-group" id="group-option-medecin">
+            <label for="medecin-option">Option de Garde :</label>
+            <select id="medecin-option">
+              <option value="presentiel">Présentiel</option>
+              <option value="teleconsult">Téléconsultation assistée</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="group-admin-infirmiere" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+            <label for="admin-infirmiere-name">Nom de l'Infirmier(ère) (optionnel) :</label>
+            <input type="text" id="admin-infirmiere-name" placeholder="ex: IDE Martin" />
+          </div>
+        </div>
+
+        <div id="admin-close-option" class="form-group" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
+          <label style="color: #dc2626; cursor: pointer;">
+            <input type="checkbox" id="toggle-closed" /> Fermer complètement cette journée
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btn-close-modal">Fermer</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-cancel-slot" class="btn-danger" style="display: none;">Libérer le créneau</button>
+            <button type="submit" id="btn-submit">Valider</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- GESTION DE L'IDENTIFIANT UNIQUE SUR LE NAVIGATEUR (COOKIE/LOCALSTORAGE) ---
+    function getOrCreateDeviceId() {
+      var id = localStorage.getItem('ctmb_device_token');
+      if (!id) {
+        id = 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('ctmb_device_token', id);
+      }
+      return id;
+    }
+
+    var deviceId = getOrCreateDeviceId();
+
+    var firebaseConfig = {
+      apiKey: "AIzaSyCdY8EK2yEryYD5FNElKmiRhyC9mY5vAS0",
+      authDomain: "ctmb-planning.firebaseapp.com",
+      projectId: "ctmb-planning",
+      storageBucket: "ctmb-planning.firebasestorage.app",
+      messagingSenderId: "773124501457",
+      appId: "1:773124501457:web:7b9d28f57f1d6257d83af0",
+      databaseURL: "https://ctmb-planning-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    var db = firebase.database();
+    var scheduleRef = db.ref('schedule');
+
+    var currentDate = new Date();
+    var currentRole = 'medecin';
+    var adminCode = localStorage.getItem('ctmb_admin_code') || '1234';
+    var remoteScheduleData = {};
+
+    var monthNames = [
+      "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+    ];
+
+    function renderCalendar() {
+      var grid = document.getElementById('calendar-grid');
+      var monthDisplay = document.getElementById('month-display');
+      if (!grid || !monthDisplay) return;
+
+      grid.innerHTML = '';
+
+      var year = currentDate.getFullYear();
+      var month = currentDate.getMonth();
+
+      monthDisplay.textContent = monthNames[month] + " " + year;
+
+      var weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+      weekDays.forEach(function(day) {
+        var header = document.createElement('div');
+        header.className = 'weekday-header';
+        header.textContent = day;
+        grid.appendChild(header);
+      });
+
+      var firstDayIndex = new Date(year, month, 1).getDay();
+      var startDay = (firstDayIndex === 0) ? 6 : firstDayIndex - 1;
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (var i = 0; i < startDay; i++) {
+        var emptyCell = document.createElement('div');
+        emptyCell.className = 'day-cell empty';
+        grid.appendChild(emptyCell);
+      }
+
+      for (var day = 1; day <= daysInMonth; day++) {
+        (function(d) {
+          var monthStr = (month + 1 < 10) ? '0' + (month + 1) : (month + 1);
+          var dayStr = (d < 10) ? '0' + d : d;
+          var dateStr = year + '-' + monthStr + '-' + dayStr;
+
+          var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+
+          var dayCell = document.createElement('div');
+          dayCell.className = 'day-cell' + (dayData.isClosed ? ' closed-day' : '');
+
+          if (dayData.isClosed) {
+            dayCell.addEventListener('click', function() { openModal(dateStr, 'matin'); });
+            dayCell.innerHTML = '<div class="day-header-number">' +
+              '<span>' + d + '</span>' +
+              '<span class="closed-label">Fermé</span>' +
+              '</div><div class="closed-label" style="text-align: center; margin-top: 15px;">JOURNÉE FERMÉE</div>';
+          } else {
+            var headerDiv = document.createElement('div');
+            headerDiv.className = 'day-header-number';
+            headerDiv.innerHTML = '<span>' + d + '</span>';
+            headerDiv.addEventListener('click', function(e) {
+              e.stopPropagation();
+              openModal(dateStr, 'matin');
+            });
+            dayCell.appendChild(headerDiv);
+
+            var slotsContainer = document.createElement('div');
+            slotsContainer.className = 'slots-container';
+
+            ['matin', 'apres-midi'].forEach(function(period) {
+              var periodLabel = period === 'matin' ? '09h-13h' : '14h-19h';
+              var slot = dayData.slots ? dayData.slots[period] : null;
+
+              var slotBox = document.createElement('div');
+              slotBox.className = 'time-slot-box';
+              slotBox.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openModal(dateStr, period);
+              });
+
+              var contentHtml = '<div class="time-slot-header">' + periodLabel + '</div>';
+
+              if (!slot || (!slot.medecin && !slot.infirmiere)) {
+                contentHtml += '<div class="empty-slot-text">+ Réserver (Libre)</div>';
+              } else {
+                if (slot.medecin) {
+                  var badgeClass = slot.medecin.option === 'teleconsult' ? 'teleconsult' : 'presentiel';
+                  var typeText = slot.medecin.option === 'teleconsult' ? 'Téléconsult.' : 'Présentiel';
+                  contentHtml += '<div class="slot-badge ' + badgeClass + '">' +
+                    '<span class="slot-title-text">Dr (' + typeText + ')</span>' +
+                    '<span class="slot-name-text">' + escapeHtml(slot.medecin.name) + '</span>' +
+                    '</div>';
+                }
+
+                if (slot.infirmiere) {
+                  contentHtml += '<div class="slot-badge infirmiere">' +
+                    '<span class="slot-title-text">Infirmier(ère)</span>' +
+                    '<span class="slot-name-text">' + escapeHtml(slot.infirmiere.name) + '</span>' +
+                    '</div>';
+                }
+              }
+
+              slotBox.innerHTML = contentHtml;
+              slotsContainer.appendChild(slotBox);
+            });
+
+            dayCell.appendChild(slotsContainer);
+          }
+
+          grid.appendChild(dayCell);
+        })(day);
+      }
+    }
+
+    function saveScheduleData(data) {
+      scheduleRef.set(data);
+    }
+
+    function changeRole() {
+      var selectedRole = document.getElementById('user-role').value;
+
+      if (selectedRole === 'admin' && currentRole !== 'admin') {
+        var pass = prompt("Entrez le code d'accès administrateur :");
+        if (pass !== adminCode) {
+          alert("Code incorrect.");
+          document.getElementById('user-role').value = currentRole;
+          return;
+        }
+      }
+
+      currentRole = selectedRole;
+      updateRoleUI();
+      renderCalendar();
+    }
+
+    function changeAdminCode() {
+      var currentPass = prompt("Entrez le code administrateur actuel :");
+      if (currentPass !== adminCode) {
+        alert("Code incorrect.");
+        return;
+      }
+
+      var newPass = prompt("Entrez le nouveau code administrateur :");
+      if (newPass && newPass.trim() !== "") {
+        adminCode = newPass.trim();
+        localStorage.setItem('ctmb_admin_code', adminCode);
+        alert("Le code d'accès administrateur a bien été modifié.");
+      }
+    }
+
+    function updateRoleUI() {
+      var adminPanel = document.getElementById('admin-panel');
+      adminPanel.style.display = (currentRole === 'admin') ? 'block' : 'none';
+    }
+
+    function openModal(dateStr, defaultPeriod) {
+      document.getElementById('selected-date').value = dateStr;
+      document.getElementById('slot-period').value = defaultPeriod || 'matin';
+      
+      var parts = dateStr.split('-');
+      var dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      
+      document.getElementById('modal-title').textContent = dateObj.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      
+      var adminOption = document.getElementById('admin-close-option');
+      var dayData = remoteScheduleData[dateStr] || { isClosed: false };
+
+      adminOption.style.display = (currentRole === 'admin') ? 'block' : 'none';
+      document.getElementById('toggle-closed').checked = dayData.isClosed || false;
+
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      updateModalFormState();
+    }
+
+    function updateModalFormState() {
+      var dateStr = document.getElementById('selected-date').value;
+      var period = document.getElementById('slot-period').value;
+      var isClosedChecked = document.getElementById('toggle-closed').checked;
+      
+      var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+      var slot = dayData.slots ? dayData.slots[period] : null;
+
+      var statusInfo = document.getElementById('slot-status-info');
+      var bookingFields = document.getElementById('booking-fields');
+      var groupMedecin = document.getElementById('group-option-medecin');
+      var groupAdminInfirmiere = document.getElementById('group-admin-infirmiere');
+      var btnSubmit = document.getElementById('btn-submit');
+      var btnCancel = document.getElementById('btn-cancel-slot');
+
+      document.getElementById('practitioner-name').value = '';
+      document.getElementById('admin-infirmiere-name').value = '';
+      
+      btnCancel.style.display = 'none';
+      btnSubmit.style.display = 'inline-block';
+      bookingFields.style.display = 'block';
+
+      if (currentRole === 'admin' && isClosedChecked) {
+        statusInfo.innerHTML = '<strong style="color: #dc2626;">La journée sera enregistrée comme fermée.</strong>';
+        bookingFields.style.display = 'none';
+        btnSubmit.textContent = "Enregistrer la fermeture";
+        return;
+      }
+
+      if (dayData.isClosed && currentRole !== 'admin') {
+        statusInfo.innerHTML = '<strong style="color: #dc2626;">Journée actuellement fermée par l\'administration.</strong>';
+        bookingFields.style.display = 'none';
+        btnSubmit.style.display = 'none';
+        return;
+      }
+
+      btnSubmit.textContent = "Valider";
+
+      if (currentRole === 'medecin') {
+        groupMedecin.style.display = 'block';
+        groupAdminInfirmiere.style.display = 'none';
+
+        if (slot && slot.medecin) {
+          var typeLabel = slot.medecin.option === 'teleconsult' ? 'Téléconsultation assistée' : 'Présentiel';
+          var isOwner = (slot.medecin.ownerToken === deviceId);
+
+          if (isOwner) {
+            statusInfo.innerHTML = '<span style="color: #16a34a; font-weight: bold;">C\'est votre créneau !</span> Vous pouvez le libérer si nécessaire.';
+            bookingFields.style.display = 'none';
+            btnSubmit.style.display = 'none';
+            btnCancel.style.display = 'inline-block';
+            btnCancel.textContent = "Libérer mon créneau médecin";
+          } else {
+            statusInfo.innerHTML = '<span style="color: #dc2626; font-weight: bold;">Créneau déjà réservé par :</span> Dr. ' + escapeHtml(slot.medecin.name) + ' (' + typeLabel + ')';
+            bookingFields.style.display = 'none';
+            btnSubmit.style.display = 'none';
+          }
+        } else {
+          statusInfo.innerHTML = '<span style="color: #16a34a; font-weight: bold;">Créneau disponible</span> pour un médecin.';
+        }
+      } 
+      else if (currentRole === 'infirmiere') {
+        groupMedecin.style.display = 'none';
+        groupAdminInfirmiere.style.display = 'none';
+
+        if (!slot || !slot.medecin || slot.medecin.option !== 'teleconsult') {
+          statusInfo.innerHTML = '<span style="color: #dc2626; font-weight: bold;">Inscriptions indisponibles :</span> Seules les plages programmées en <strong>Téléconsultation assistée</strong> par un médecin peuvent recevoir un infirmier(ère).';
+          bookingFields.style.display = 'none';
+          btnSubmit.style.display = 'none';
+        } else if (slot.infirmiere) {
+          var isOwner = (slot.infirmiere.ownerToken === deviceId);
+
+          if (isOwner) {
+            statusInfo.innerHTML = '<span style="color: #16a34a; font-weight: bold;">C\'est votre créneau !</span> Vous pouvez le libérer si nécessaire.';
+            bookingFields.style.display = 'none';
+            btnSubmit.style.display = 'none';
+            btnCancel.style.display = 'inline-block';
+            btnCancel.textContent = "Libérer mon créneau infirmier";
+          } else {
+            statusInfo.innerHTML = '<span style="color: #dc2626; font-weight: bold;">Créneau déjà réservé par :</span> IDE ' + escapeHtml(slot.infirmiere.name);
+            bookingFields.style.display = 'none';
+            btnSubmit.style.display = 'none';
+          }
+        } else {
+          statusInfo.innerHTML = '<span style="color: #16a34a; font-weight: bold;">Créneau ouvert !</span> Le Dr. ' + escapeHtml(slot.medecin.name) + ' a programmé une téléconsultation assistée.';
+        }
+      } 
+      else if (currentRole === 'admin') {
+        groupMedecin.style.display = 'block';
+        groupAdminInfirmiere.style.display = 'block';
+        statusInfo.innerHTML = '<strong>Mode Administrateur :</strong> Modification directe des réservations.';
+
+        if (slot) {
+          if (slot.medecin) {
+            document.getElementById('practitioner-name').value = slot.medecin.name || '';
+            document.getElementById('medecin-option').value = slot.medecin.option || 'presentiel';
+          }
+          if (slot.infirmiere) {
+            document.getElementById('admin-infirmiere-name').value = slot.infirmiere.name || '';
+          }
+          if (slot.medecin || slot.infirmiere) {
+            btnCancel.style.display = 'inline-block';
+            btnCancel.textContent = "Vider ce créneau";
+          }
+        }
+      }
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      var dateStr = document.getElementById('selected-date').value;
+      var period = document.getElementById('slot-period').value;
+      var name = document.getElementById('practitioner-name').value.trim();
+      var adminInfirmiereName = document.getElementById('admin-infirmiere-name').value.trim();
+      var isClosed = document.getElementById('toggle-closed').checked;
+
+      if (!remoteScheduleData[dateStr]) {
+        remoteScheduleData[dateStr] = { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+      }
+      if (!remoteScheduleData[dateStr].slots) {
+        remoteScheduleData[dateStr].slots = { matin: null, 'apres-midi': null };
+      }
+
+      if (currentRole === 'admin') {
+        remoteScheduleData[dateStr].isClosed = isClosed;
+        if (isClosed) {
+          saveScheduleData(remoteScheduleData);
+          closeModal();
+          return;
+        }
+      }
+
+      if (!remoteScheduleData[dateStr].slots[period]) {
+        remoteScheduleData[dateStr].slots[period] = { medecin: null, infirmiere: null };
+      }
+
+      if (currentRole === 'medecin') {
+        if (!name) { alert("Veuillez saisir votre nom."); return; }
+        var option = document.getElementById('medecin-option').value;
+        remoteScheduleData[dateStr].slots[period].medecin = { name: name, option: option, ownerToken: deviceId };
+      } 
+      else if (currentRole === 'infirmiere') {
+        if (!name) { alert("Veuillez saisir votre nom."); return; }
+        remoteScheduleData[dateStr].slots[period].infirmiere = { name: name, ownerToken: deviceId };
+      } 
+      else if (currentRole === 'admin') {
+        var option = document.getElementById('medecin-option').value;
+        if (name) {
+          remoteScheduleData[dateStr].slots[period].medecin = { name: name, option: option, ownerToken: 'admin' };
+        } else {
+          remoteScheduleData[dateStr].slots[period].medecin = null;
+        }
+
+        if (adminInfirmiereName) {
+          remoteScheduleData[dateStr].slots[period].infirmiere = { name: adminInfirmiereName, ownerToken: 'admin' };
+        } else {
+          remoteScheduleData[dateStr].slots[period].infirmiere = null;
+        }
+      }
+
+      saveScheduleData(remoteScheduleData);
+      closeModal();
+    }
+
+    function cancelCurrentSlot() {
+      var dateStr = document.getElementById('selected-date').value;
+      var period = document.getElementById('slot-period').value;
+
+      var slot = remoteScheduleData[dateStr] && remoteScheduleData[dateStr].slots ? remoteScheduleData[dateStr].slots[period] : null;
+      if (!slot) return;
+
+      if (currentRole === 'admin') {
+        remoteScheduleData[dateStr].slots[period].medecin = null;
+        remoteScheduleData[dateStr].slots[period].infirmiere = null;
+        saveScheduleData(remoteScheduleData);
+        closeModal();
+        return;
+      }
+
+      if (currentRole === 'medecin') {
+        if (slot.medecin && slot.medecin.ownerToken === deviceId) {
+          remoteScheduleData[dateStr].slots[period].medecin = null;
+          remoteScheduleData[dateStr].slots[period].infirmiere = null; // Annule aussi la réservation infirmière si le médecin se retire
+          saveScheduleData(remoteScheduleData);
+          alert("Votre réservation a bien été supprimée.");
+          closeModal();
+        } else {
+          alert("Vous n'êtes pas l'auteur de ce créneau.");
+        }
+      } 
+      else if (currentRole === 'infirmiere') {
+        if (slot.infirmiere && slot.infirmiere.ownerToken === deviceId) {
+          remoteScheduleData[dateStr].slots[period].infirmiere = null;
+          saveScheduleData(remoteScheduleData);
+          alert("Votre réservation a bien été supprimée.");
+          closeModal();
+        } else {
+          alert("Vous n'êtes pas l'auteur de ce créneau.");
+        }
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.add('hidden');
+      document.getElementById('slot-form').reset();
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      renderCalendar();
+      updateRoleUI();
+
+      scheduleRef.on('value', function(snapshot) {
+        remoteScheduleData = snapshot.val() || {};
+        renderCalendar();
+      });
+
+      document.getElementById('user-role').addEventListener('change', changeRole);
+      document.getElementById('btn-prev-month').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+      });
+      document.getElementById('btn-next-month').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+      });
+      document.getElementById('btn-change-admin-code').addEventListener('click', changeAdminCode);
+      document.getElementById('btn-reset-data').addEventListener('click', function() {
+        if (confirm("Êtes-vous sûr de vouloir réinitialiser l'ensemble du planning CTMB ?")) {
+          saveScheduleData({});
+        }
+      });
+      document.getElementById('slot-period').addEventListener('change', updateModalFormState);
+      document.getElementById('toggle-closed').addEventListener('change', updateModalFormState);
+      document.getElementById('slot-form').addEventListener('submit', handleFormSubmit);
+      document.getElementById('btn-cancel-slot').addEventListener('click', cancelCurrentSlot);
+      document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+    });
+  </script>
+</body>
+</html>
