@@ -11,8 +11,8 @@
 
   <style>
     :root {
-      --primary-color: #1e3a8a;
-      --primary-hover: #1e40af;
+      --primary-color: #358580;
+      --primary-hover: #2b6e6a;
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --text-color: #1e293b;
@@ -23,9 +23,9 @@
       --color-presentiel-text: #166534;
       --color-presentiel-border: #16a34a;
 
-      --color-teleconsult: #dbeafe;
+      --color-teleconsult: #e0f2fe;
       --color-teleconsult-text: #1e40af;
-      --color-teleconsult-border: #2563eb;
+      --color-teleconsult-border: #3b82f6;
 
       --color-infirmiere: #f3e8ff;
       --color-infirmiere-text: #6b21a8;
@@ -55,6 +55,74 @@
       margin: 0 auto;
     }
 
+    /* --- PAGE DE CONNEXION --- */
+    #login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 650px;
+      text-align: center;
+    }
+
+    .login-banner-logo {
+      width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      margin-bottom: 24px;
+    }
+
+    .login-card h2 {
+      font-size: 1.3rem;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .login-form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .login-form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .login-form-group select {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+    }
+
+    /* --- APPLICATION PRINCIPALE --- */
+    #app-screen {
+      display: none;
+    }
+
     header {
       background: var(--card-bg);
       padding: 20px 30px;
@@ -74,24 +142,9 @@
       gap: 16px;
     }
 
-    .logo-badge {
-      background: var(--primary-color);
-      color: white;
-      font-weight: bold;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      color: var(--primary-color);
-    }
-
-    .subtitle {
-      font-size: 0.875rem;
-      color: var(--text-muted);
+    .header-logo {
+      height: 60px;
+      object-fit: contain;
     }
 
     .header-right {
@@ -100,18 +153,13 @@
       gap: 20px;
     }
 
-    .role-selector {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .role-badge-display {
       background: #f1f5f9;
       padding: 8px 14px;
       border-radius: 8px;
-    }
-
-    .role-selector label {
       font-weight: 600;
       font-size: 0.9rem;
+      color: var(--primary-color);
     }
 
     select, input, button {
@@ -124,7 +172,7 @@
 
     select:focus, input:focus {
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+      box-shadow: 0 0 0 2px rgba(53, 133, 128, 0.2);
     }
 
     button {
@@ -292,6 +340,8 @@
       margin-bottom: 3px;
       border-bottom: 1px solid #f1f5f9;
       padding-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
     }
 
     .slot-badge {
@@ -439,28 +489,37 @@
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <div class="logo-title">
-        <div class="logo-badge">CTMB</div>
-        <div>
-          <h1>Planning des permanences</h1>
-          <div class="subtitle">Centre Territorial Médical du Biterrois</div>
-        </div>
-      </div>
-
-      <div class="header-right">
-        <div class="role-selector">
-          <label for="user-role">Vous êtes :</label>
-          <select id="user-role">
+  <!-- PAGE DE CONNEXION INITIALE -->
+  <div id="login-screen" class="container">
+    <div class="login-card">
+      <img src="logo CTMB long.jpg" alt="Centre Territorial Médical du Biterrois" class="login-banner-logo" />
+      <h2>Connexion au planning</h2>
+      <p>Vous allez vous connecter au planning du centre territorial médical du biterrois.</p>
+      
+      <form id="login-form">
+        <div class="login-form-group">
+          <label for="login-role-select">Sélectionnez votre statut :</label>
+          <select id="login-role-select">
             <option value="medecin">Médecin</option>
             <option value="infirmiere">Infirmier(ère)</option>
             <option value="admin">Administrateur</option>
           </select>
         </div>
-        <div style="border: 1px dashed #cbd5e1; padding: 10px 15px; border-radius: 6px; color: #64748b; font-size: 0.85rem;">
-          Logo CTMB
-        </div>
+        <button type="submit" class="btn-login">Accéder au planning</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APPLICATION PRINCIPALE -->
+  <div id="app-screen" class="container">
+    <header>
+      <div class="logo-title">
+        <img src="logo CTMB long.jpg" alt="Centre Territorial Médical du Biterrois" class="header-logo" />
+      </div>
+
+      <div class="header-right">
+        <div class="role-badge-display" id="role-display-text">Statut : -</div>
+        <button type="button" class="btn-secondary" id="btn-logout" style="padding: 6px 12px; font-size: 0.85rem;">Changer de statut</button>
       </div>
     </header>
 
@@ -494,9 +553,10 @@
     <div id="admin-panel" class="admin-panel" style="display: none;">
       <h2>Panneau d'Administration</h2>
       <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
-        Gestion globale des fermetures, modification directe des créneaux et réinitialisation.
+        Gestion globale des fermetures, modification directe des créneaux, personnalisation des horaires et réinitialisation.
       </p>
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn-secondary" id="btn-edit-global-hours">Modifier les horaires par défaut</button>
         <button class="btn-secondary" id="btn-change-admin-code">Modifier le code Admin</button>
         <button class="btn-danger" id="btn-reset-data">Réinitialiser le planning complet</button>
       </div>
@@ -514,8 +574,8 @@
         <div class="form-group">
           <label for="slot-period">Créneau horaire :</label>
           <select id="slot-period">
-            <option value="matin">Matin (09h - 13h)</option>
-            <option value="apres-midi">Après-midi (14h - 19h)</option>
+            <option value="matin">Matin</option>
+            <option value="apres-midi">Après-midi</option>
           </select>
         </div>
 
@@ -541,6 +601,13 @@
           </div>
         </div>
 
+        <div id="admin-slot-hours-config" class="form-group" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
+          <label style="font-weight: 600; color: var(--primary-color); margin-bottom: 8px;">Modifier l'intitulé/horaire de ce créneau :</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="custom-slot-label-input" placeholder="ex: 09h - 13h" />
+          </div>
+        </div>
+
         <div id="admin-close-option" class="form-group" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
           <label style="color: #dc2626; cursor: pointer;">
             <input type="checkbox" id="toggle-closed" /> Fermer complètement cette journée
@@ -559,7 +626,7 @@
   </div>
 
   <script>
-    // --- GESTION DE L'IDENTIFIANT UNIQUE SUR LE NAVIGATEUR (COOKIE/LOCALSTORAGE) ---
+    // --- GESTION DE L'IDENTIFIANT UNIQUE SUR LE NAVIGATEUR ---
     function getOrCreateDeviceId() {
       var id = localStorage.getItem('ctmb_device_token');
       if (!id) {
@@ -586,16 +653,49 @@
     }
     var db = firebase.database();
     var scheduleRef = db.ref('schedule');
+    var settingsRef = db.ref('settings');
 
     var currentDate = new Date();
     var currentRole = 'medecin';
     var adminCode = localStorage.getItem('ctmb_admin_code') || '1234';
     var remoteScheduleData = {};
+    var globalSettings = {
+      slotHours: {
+        matin: "09h-13h",
+        "apres-midi": "14h-19h"
+      }
+    };
 
     var monthNames = [
       "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
       "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
     ];
+
+    function handleLogin(event) {
+      event.preventDefault();
+      var selectedRole = document.getElementById('login-role-select').value;
+
+      if (selectedRole === 'admin') {
+        var pass = prompt("Entrez le code d'accès administrateur :");
+        if (pass !== adminCode) {
+          alert("Code incorrect.");
+          return;
+        }
+      }
+
+      currentRole = selectedRole;
+      
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+
+      updateRoleUI();
+      renderCalendar();
+    }
+
+    function logout() {
+      document.getElementById('app-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    }
 
     function renderCalendar() {
       var grid = document.getElementById('calendar-grid');
@@ -633,7 +733,7 @@
           var dayStr = (d < 10) ? '0' + d : d;
           var dateStr = year + '-' + monthStr + '-' + dayStr;
 
-          var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+          var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null }, customHours: {} };
 
           var dayCell = document.createElement('div');
           dayCell.className = 'day-cell' + (dayData.isClosed ? ' closed-day' : '');
@@ -658,7 +758,9 @@
             slotsContainer.className = 'slots-container';
 
             ['matin', 'apres-midi'].forEach(function(period) {
-              var periodLabel = period === 'matin' ? '09h-13h' : '14h-19h';
+              var defaultLabel = globalSettings.slotHours && globalSettings.slotHours[period] ? globalSettings.slotHours[period] : (period === 'matin' ? '09h-13h' : '14h-19h');
+              var periodLabel = (dayData.customHours && dayData.customHours[period]) ? dayData.customHours[period] : defaultLabel;
+              
               var slot = dayData.slots ? dayData.slots[period] : null;
 
               var slotBox = document.createElement('div');
@@ -668,7 +770,7 @@
                 openModal(dateStr, period);
               });
 
-              var contentHtml = '<div class="time-slot-header">' + periodLabel + '</div>';
+              var contentHtml = '<div class="time-slot-header"><span>' + periodLabel + '</span>' + (currentRole === 'admin' ? '<span style="font-size:0.65rem; color:var(--primary-color);">⚙️</span>' : '') + '</div>';
 
               if (!slot || (!slot.medecin && !slot.infirmiere)) {
                 contentHtml += '<div class="empty-slot-text">+ Réserver (Libre)</div>';
@@ -706,21 +808,8 @@
       scheduleRef.set(data);
     }
 
-    function changeRole() {
-      var selectedRole = document.getElementById('user-role').value;
-
-      if (selectedRole === 'admin' && currentRole !== 'admin') {
-        var pass = prompt("Entrez le code d'accès administrateur :");
-        if (pass !== adminCode) {
-          alert("Code incorrect.");
-          document.getElementById('user-role').value = currentRole;
-          return;
-        }
-      }
-
-      currentRole = selectedRole;
-      updateRoleUI();
-      renderCalendar();
+    function saveSettingsData(data) {
+      settingsRef.set(data);
     }
 
     function changeAdminCode() {
@@ -738,9 +827,36 @@
       }
     }
 
+    function editGlobalHours() {
+      var currentMatin = globalSettings.slotHours ? globalSettings.slotHours.matin : "09h-13h";
+      var currentApresMidi = globalSettings.slotHours ? globalSettings.slotHours["apres-midi"] : "14h-19h";
+
+      var newMatin = prompt("Modifier l'horaire par défaut du Matin :", currentMatin);
+      if (newMatin === null) return;
+      var newApresMidi = prompt("Modifier l'horaire par défaut de l'Après-midi :", currentApresMidi);
+      if (newApresMidi === null) return;
+
+      globalSettings.slotHours = {
+        matin: newMatin.trim() || "09h-13h",
+        "apres-midi": newApresMidi.trim() || "14h-19h"
+      };
+
+      saveSettingsData(globalSettings);
+      alert("Les horaires par défaut ont été mis à jour.");
+    }
+
     function updateRoleUI() {
       var adminPanel = document.getElementById('admin-panel');
+      var roleDisplayText = document.getElementById('role-display-text');
+      
       adminPanel.style.display = (currentRole === 'admin') ? 'block' : 'none';
+
+      var roleLabels = {
+        'medecin': 'Statut : Médecin',
+        'infirmiere': 'Statut : Infirmier(ère)',
+        'admin': 'Statut : Administrateur'
+      };
+      roleDisplayText.textContent = roleLabels[currentRole] || 'Statut : -';
     }
 
     function openModal(dateStr, defaultPeriod) {
@@ -758,10 +874,18 @@
       });
       
       var adminOption = document.getElementById('admin-close-option');
-      var dayData = remoteScheduleData[dateStr] || { isClosed: false };
+      var adminHoursConfig = document.getElementById('admin-slot-hours-config');
+      var dayData = remoteScheduleData[dateStr] || { isClosed: false, customHours: {} };
 
       adminOption.style.display = (currentRole === 'admin') ? 'block' : 'none';
+      adminHoursConfig.style.display = (currentRole === 'admin') ? 'block' : 'none';
+      
       document.getElementById('toggle-closed').checked = dayData.isClosed || false;
+
+      var period = document.getElementById('slot-period').value;
+      var defaultLabel = globalSettings.slotHours && globalSettings.slotHours[period] ? globalSettings.slotHours[period] : (period === 'matin' ? '09h-13h' : '14h-19h');
+      var currentCustom = (dayData.customHours && dayData.customHours[period]) ? dayData.customHours[period] : defaultLabel;
+      document.getElementById('custom-slot-label-input').value = currentCustom;
 
       document.getElementById('modal-overlay').classList.remove('hidden');
       updateModalFormState();
@@ -772,7 +896,7 @@
       var period = document.getElementById('slot-period').value;
       var isClosedChecked = document.getElementById('toggle-closed').checked;
       
-      var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+      var dayData = remoteScheduleData[dateStr] || { isClosed: false, slots: { matin: null, 'apres-midi': null }, customHours: {} };
       var slot = dayData.slots ? dayData.slots[period] : null;
 
       var statusInfo = document.getElementById('slot-status-info');
@@ -784,6 +908,12 @@
 
       document.getElementById('practitioner-name').value = '';
       document.getElementById('admin-infirmiere-name').value = '';
+
+      var defaultLabel = globalSettings.slotHours && globalSettings.slotHours[period] ? globalSettings.slotHours[period] : (period === 'matin' ? '09h-13h' : '14h-19h');
+      var currentCustom = (dayData.customHours && dayData.customHours[period]) ? dayData.customHours[period] : defaultLabel;
+      if (document.getElementById('custom-slot-label-input')) {
+        document.getElementById('custom-slot-label-input').value = currentCustom;
+      }
       
       btnCancel.style.display = 'none';
       btnSubmit.style.display = 'inline-block';
@@ -792,7 +922,7 @@
       if (currentRole === 'admin' && isClosedChecked) {
         statusInfo.innerHTML = '<strong style="color: #dc2626;">La journée sera enregistrée comme fermée.</strong>';
         bookingFields.style.display = 'none';
-        btnSubmit.textContent = "Enregistrer la fermeture";
+        btnSubmit.textContent = "Enregistrer les modifications";
         return;
       }
 
@@ -857,7 +987,7 @@
       else if (currentRole === 'admin') {
         groupMedecin.style.display = 'block';
         groupAdminInfirmiere.style.display = 'block';
-        statusInfo.innerHTML = '<strong>Mode Administrateur :</strong> Modification directe des réservations.';
+        statusInfo.innerHTML = '<strong>Mode Administrateur :</strong> Modification directe des réservations et des horaires.';
 
         if (slot) {
           if (slot.medecin) {
@@ -885,14 +1015,25 @@
       var isClosed = document.getElementById('toggle-closed').checked;
 
       if (!remoteScheduleData[dateStr]) {
-        remoteScheduleData[dateStr] = { isClosed: false, slots: { matin: null, 'apres-midi': null } };
+        remoteScheduleData[dateStr] = { isClosed: false, slots: { matin: null, 'apres-midi': null }, customHours: {} };
       }
       if (!remoteScheduleData[dateStr].slots) {
         remoteScheduleData[dateStr].slots = { matin: null, 'apres-midi': null };
       }
+      if (!remoteScheduleData[dateStr].customHours) {
+        remoteScheduleData[dateStr].customHours = {};
+      }
 
       if (currentRole === 'admin') {
         remoteScheduleData[dateStr].isClosed = isClosed;
+        
+        var customHoursInput = document.getElementById('custom-slot-label-input').value.trim();
+        if (customHoursInput) {
+          remoteScheduleData[dateStr].customHours[period] = customHoursInput;
+        } else {
+          delete remoteScheduleData[dateStr].customHours[period];
+        }
+
         if (isClosed) {
           saveScheduleData(remoteScheduleData);
           closeModal();
@@ -950,7 +1091,7 @@
       if (currentRole === 'medecin') {
         if (slot.medecin && slot.medecin.ownerToken === deviceId) {
           remoteScheduleData[dateStr].slots[period].medecin = null;
-          remoteScheduleData[dateStr].slots[period].infirmiere = null; // Annule aussi la réservation infirmière si le médecin se retire
+          remoteScheduleData[dateStr].slots[period].infirmiere = null; 
           saveScheduleData(remoteScheduleData);
           alert("Votre réservation a bien été supprimée.");
           closeModal();
@@ -982,15 +1123,22 @@
     }
 
     window.addEventListener('DOMContentLoaded', function() {
-      renderCalendar();
-      updateRoleUI();
-
       scheduleRef.on('value', function(snapshot) {
         remoteScheduleData = snapshot.val() || {};
         renderCalendar();
       });
 
-      document.getElementById('user-role').addEventListener('change', changeRole);
+      settingsRef.on('value', function(snapshot) {
+        var val = snapshot.val();
+        if (val) {
+          globalSettings = val;
+          renderCalendar();
+        }
+      });
+
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+      document.getElementById('btn-logout').addEventListener('click', logout);
+      
       document.getElementById('btn-prev-month').addEventListener('click', function() {
         currentDate.setMonth(currentDate.getMonth() - 1);
         renderCalendar();
@@ -999,6 +1147,7 @@
         currentDate.setMonth(currentDate.getMonth() + 1);
         renderCalendar();
       });
+      document.getElementById('btn-edit-global-hours').addEventListener('click', editGlobalHours);
       document.getElementById('btn-change-admin-code').addEventListener('click', changeAdminCode);
       document.getElementById('btn-reset-data').addEventListener('click', function() {
         if (confirm("Êtes-vous sûr de vouloir réinitialiser l'ensemble du planning CTMB ?")) {
